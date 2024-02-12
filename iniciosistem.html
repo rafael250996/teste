@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesquisa de Produtos</title>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-firestore.js"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #3498db;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #fff;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    button {
+      background-color: #2ecc71;
+      color: #fff;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 300px;
+      padding: 8px;
+      margin-bottom: 16px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .product-info {
+      max-width: 600px;
+      width: 100%;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      display: none;
+    }
+
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+  </style>  
+</head>
+<body>
+  <h1>Pesquisa de Produtos</h1>
+
+  <input type="text" id="nomeProduto" placeholder="Digite o nome do produto">
+  <button onclick="pesquisarProduto()">Pesquisar</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    // Configuração do seu projeto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCCL6cb0cqR539KO3KYcHsVvcLsEmr6QXc",
+      authDomain: "projeto-site-40654.firebaseapp.com",
+      databaseURL: "https://projeto-site-40654-default-rtdb.firebaseio.com",
+      projectId: "projeto-site-40654",
+      storageBucket: "projeto-site-40654.appspot.com",
+      messagingSenderId: "718667484125",
+      appId: "1:718667484125:web:994e89c34ebb9a94a44434",
+      measurementId: "G-FWE7Z6SWVW"
+    };
+
+    // Inicializa o Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+
+    // Referência ao Firestore
+    const db = firebase.firestore();
+
+    function pesquisarProduto() {
+      const nomeProduto = document.getElementById('nomeProduto').value;
+
+      fetch('produtos.csv')  // Assumindo que o arquivo está na mesma pasta que esta página HTML
+        .then(response => response.text())
+        .then(conteudo => {
+          const linhas = conteudo.split('\n');
+
+          const produtoEncontrado = linhas.find(linha => {
+            const [nome_produto] = linha.split(',');
+            return nome_produto.trim().toLowerCase() === nomeProduto.trim().toLowerCase();
+          });
+
+          if (produtoEncontrado) {
+            const [nome_produto, preco, estoque, obs] = produtoEncontrado.split(',');
+            const resultadoDiv = document.getElementById('resultado');
+            resultadoDiv.innerHTML = `
+              <p><strong>Nome do Produto:</strong> ${nome_produto}</p>
+              <p><strong>Preço:</strong> ${preco}</p>
+              <p><strong>Estoque:</strong> ${estoque}</p>
+              <p><strong>Observações:</strong> ${obs}</p>
+            `;
+
+            // Adiciona o histórico de pesquisa ao Firestore
+            adicionarHistorico(nome_produto);
+          } else {
+            alert('Produto não encontrado.');
+          }
+        })
+        .catch(error => console.error('Erro ao ler o arquivo:', error));
+    }
+
+    function adicionarHistorico(nomeProduto) {
+      // Adiciona um documento à coleção "historicos" no Firestore
+      db.collection("historicos").add({
+        produto: nomeProduto,
+        data: new Date()
+      })
+      .then((docRef) => {
+        console.log("Histórico adicionado com sucesso:", docRef.id);
+      })
+      .catch((error) => {
+        console.error("Erro ao adicionar histórico:", error);
+      });
+    }
+
+    document.getElementById('nomeProduto').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        pesquisarProduto();
+      }
+    });
+  </script>
+</body>
+</html>
