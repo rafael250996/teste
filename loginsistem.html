@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login e Cadastro de Usuário</title>
+
+  <script>
+    function login() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      fetch('usuarios.csv')
+        .then(response => response.text())
+        .then(data => {
+          const lines = data.split('\n');
+          for (const line of lines) {
+            const [storedEmail, storedPassword] = line.split(',');
+
+            if (email === storedEmail && password === storedPassword) {
+              alert("Login bem-sucedido!");
+              window.location.href = 'iniciosistem.html';
+              return;
+            }
+          }
+
+          alert("Credenciais inválidas. Por favor, verifique seu email e senha.");
+        })
+        .catch(error => console.error("Erro ao ler o arquivo CSV:", error));
+    }
+  </script>
+  <style>
+body{font-family:'Arial',sans-serif;background-color:#e74c3c;margin:0;padding:0;display:flex;justify-content:center;align-items:center;height:100vh}.container{text-align:center;color:#fff;margin-top:-50px}form{background-color:#fff;padding:20px;border-radius:8px;box-shadow:0 0 10px rgba(0,0,0,0.1);max-width:400px;width:100%}label{display:block;margin-bottom:8px;color:#333;width:100%}input{width:100%;padding:8px;margin-bottom:16px;box-sizing:border-box;border:1px solid #ccc;border-radius:4px}button{background-color:#c0392b;color:#fff;padding:10px;border:none;border-radius:4px;cursor:pointer;font-size:16px;width:100%;transition:opacity .3s ease-in-out}button:hover{background-color:#a93226;opacity:.8}</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Login e Cadastro de Usuário</h1>
+
+    <!-- Formulário de Login -->
+    <form id="loginForm">
+      <label for="loginEmail">Email:</label>
+      <input type="email" id="loginEmail" required>
+
+      <label for="loginPassword">Senha:</label>
+      <input type="password" id="loginPassword" required>
+
+      <button type="button" onclick="login()">Login</button>
+    </form>
+  </div>
+</body>
+</html>
